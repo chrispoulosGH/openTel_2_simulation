@@ -1,0 +1,14 @@
+# Python environments
+.venv/
+.venv312/
+__pycache__/
+*.pyc
+
+# Logs and generated trace output
+services.log
+local_traces/
+*.pm4py.csv
+
+# Common local artifacts
+*.tmp
+*.log

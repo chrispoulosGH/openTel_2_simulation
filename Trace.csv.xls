@@ -1,0 +1,11 @@
+case:concept:name,concept:name,time:timestamp,business_process_flow,service.name,span_id,parent_span_id,span_name,span_kind,status_code
+6b27a16a06e26944ac2eb01b88246165,service_a:process-request,2026-03-25T18:08:41.569355Z,troubleshoot broadband,service_a,77db63f86ae8c205,f575a8e5c4c5b909,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_b:process-request,2026-03-25T18:08:43.891838Z,troubleshoot broadband,service_b,0b764afa851240b6,429f2e19c8f1d507,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_d:process-request,2026-03-25T18:08:46.579990Z,troubleshoot broadband,service_d,054578dc29265a83,dfe358ea8acd7daa,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_g:process-request,2026-03-25T18:08:48.867148Z,troubleshoot broadband,service_g,f092f162a8b4dd4a,2de9b1dadaedd8a4,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_c:process-request,2026-03-25T18:08:50.938450Z,troubleshoot broadband,service_c,1d83e83233db3cad,c303404f787c97e6,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_j:process-request,2026-03-25T18:08:51.201257Z,troubleshoot broadband,service_j,c31a491b1b436e07,e4cf6d537225e17e,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_e:process-request,2026-03-25T18:08:53.252699Z,troubleshoot broadband,service_e,4049ebbdaf7d7215,66042827610b63ef,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_f:process-request,2026-03-25T18:08:54.175673Z,troubleshoot broadband,service_f,385312ef99b58b1d,aae0e2c50f8196d4,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_h:process-request,2026-03-25T18:08:55.943320Z,troubleshoot broadband,service_h,3a3a5b3655d5df16,e29083c61a2f4c8e,process-request,SPAN_KIND_INTERNAL,0
+6b27a16a06e26944ac2eb01b88246165,service_i:process-request,2026-03-25T18:08:56.877731Z,troubleshoot broadband,service_i,53a65e50c48442ba,77507e83849fdc22,process-request,SPAN_KIND_INTERNAL,0

@@ -1,0 +1,102 @@
+﻿"""Service D â€“ microservice simulator. Called by B, calls G downstream."""
+import os
+import time
+import random
+from flask import Flask, jsonify, request
+from opentelemetry import baggage, context, trace
+from common.chains import CHAIN_DEFINITIONS, FORKED_CHAIN_DEFINITIONS
+from common.tracing import init_tracer, instrument_app, simulate_db_call, print_e2eux, copy_baggage_to_span, call_next_service_in_chain, call_forked_chain_from_entry, get_possible_downstream_urls_for_service, log_service_invocation
+
+
+SERVICE_NAME = "ABPT"
+PORT = int(os.getenv("SERVICE_D_PORT", 8004))
+OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317")
+E2EUX = os.getenv("E2EUX", "Troubleshoot Broadband (Care)")
+# Match CCSF_service.py value
+Business_Flow_ID = "TechFast-Broadband"
+Business_Flow_Instance_ID = "A0000001"
+
+DOWNSTREAM = get_possible_downstream_urls_for_service(SERVICE_NAME)
+
+app = Flask(SERVICE_NAME)
+tracer = init_tracer(SERVICE_NAME, OTLP_ENDPOINT)
+instrument_app(app)
+
+
+@app.route("/info", methods=["GET"])
+def info():
+    return jsonify(service=SERVICE_NAME, port=PORT, downstream=get_possible_downstream_urls_for_service(SERVICE_NAME))
+
+
+@app.route("/d", methods=["GET"])
+def handle_d():
+    chain_id = request.args.get("chain_id", "chain_01")
+    if chain_id not in CHAIN_DEFINITIONS and chain_id not in FORKED_CHAIN_DEFINITIONS:
+        return jsonify(error=f"Unknown chain_id: {chain_id}"), 400
+
+    baggage_context = baggage.set_baggage("chain_id", chain_id)
+    baggage_context = baggage.set_baggage(
+        "E2EUX",
+        E2EUX,
+        context=baggage_context,
+    )
+    baggage_context = baggage.set_baggage(
+        "Business_Flow_ID",
+        Business_Flow_ID,
+        context=baggage_context,
+    )
+    baggage_context = baggage.set_baggage(
+        "Business_Flow_Instance_ID",
+        Business_Flow_Instance_ID,
+        context=baggage_context,
+    )
+    token = context.attach(baggage_context)
+    try:
+        current_span = trace.get_current_span()
+        if current_span.is_recording():
+            current_span.set_attribute("E2EUX", E2EUX)
+            current_span.set_attribute("chain_id", chain_id)
+            current_span.set_attribute("Business_Flow_ID", Business_Flow_ID)
+            current_span.set_attribute("Business_Flow_Instance_ID", Business_Flow_Instance_ID)
+
+        log_service_invocation(SERVICE_NAME, e2eux=E2EUX)
+        print_e2eux(SERVICE_NAME, fallback=E2EUX)
+
+        with tracer.start_as_current_span("process-request") as span:
+            copy_baggage_to_span(
+                ["E2EUX", "chain_id", "Business_Flow_ID", "Business_Flow_Instance_ID"],
+                span=span,
+                fallback_values={
+                    "E2EUX": E2EUX,
+                    "chain_id": chain_id,
+                    "Business_Flow_ID": Business_Flow_ID,
+                    "Business_Flow_Instance_ID": Business_Flow_Instance_ID,
+                },
+            )
+            time.sleep(random.uniform(0.005, 0.02))  # simulate deserialization
+            db_result = simulate_db_call(tracer, "db_d")
+            time.sleep(random.uniform(0.01, 0.03))  # simulate cache lookup
+            downstream = call_forked_chain_from_entry(SERVICE_NAME)
+            if downstream is None:
+                downstream = call_next_service_in_chain(SERVICE_NAME)
+            return jsonify(
+                service=SERVICE_NAME,
+                chain_id=chain_id,
+                E2EUX=E2EUX,
+                Business_Flow_ID=Business_Flow_ID,
+                Business_Flow_Instance_ID=Business_Flow_Instance_ID,
+                db=db_result,
+                downstream=downstream,
+            )
+    finally:
+        context.detach(token)
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify(status="ok", service=SERVICE_NAME)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=PORT)
+
